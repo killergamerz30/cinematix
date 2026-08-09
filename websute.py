@@ -14,31 +14,84 @@ st.set_page_config(
 )
 
 # ==================================================
-# DARK CINEMATIC STYLE
+# CINEMATIC DESIGN
 # ==================================================
 
 st.markdown(
     """
     <style>
 
+    /* Main background */
     .stApp {
         background: linear-gradient(
             135deg,
-            #090A0F 0%,
-            #151821 100%
+            #07090D 0%,
+            #111827 50%,
+            #07090D 100%
         );
+        color: #FFFFFF;
     }
 
+    /* Main title */
     .main-title {
+        color: #FFFFFF;
         font-size: 48px;
-        font-weight: 800;
+        font-weight: 900;
+        letter-spacing: 2px;
         margin-bottom: 5px;
     }
 
+    /* Subtitle */
     .sub-title {
-        color: #9CA3AF;
+        color: #CBD5E1;
         font-size: 18px;
-        margin-bottom: 25px;
+        margin-bottom: 30px;
+    }
+
+    /* Movie card */
+    .movie-card {
+        background: #111827;
+        border: 1px solid #374151;
+        border-radius: 14px;
+        padding: 16px;
+        margin-top: 8px;
+        margin-bottom: 24px;
+        min-height: 175px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.35);
+    }
+
+    /* Rank */
+    .movie-rank {
+        color: #22D3EE;
+        font-size: 14px;
+        font-weight: 800;
+        letter-spacing: 2px;
+        margin-bottom: 8px;
+    }
+
+    /* Movie name */
+    .movie-name {
+        color: #FFFFFF !important;
+        font-size: 20px;
+        font-weight: 800;
+        line-height: 1.3;
+        margin-bottom: 15px;
+    }
+
+    /* Label */
+    .metric-label {
+        color: #CBD5E1;
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 1px;
+        margin-bottom: 5px;
+    }
+
+    /* Money */
+    .metric-value {
+        color: #34D399;
+        font-size: 20px;
+        font-weight: 900;
     }
 
     </style>
@@ -47,7 +100,7 @@ st.markdown(
 )
 
 # ==================================================
-# POSTER FUNCTION
+# MOVIE POSTER
 # ==================================================
 
 def get_movie_poster(number):
@@ -64,7 +117,7 @@ def get_movie_poster(number):
 
 
 # ==================================================
-# LIVE BOX OFFICE SCRAPER
+# LIVE BOX OFFICE DATA
 # ==================================================
 
 @st.cache_data(ttl=14400)
@@ -102,6 +155,7 @@ def get_box_office_data():
         )
 
         if table is None:
+
             return pd.DataFrame(
                 columns=[
                     "Rank",
@@ -137,8 +191,11 @@ def get_box_office_data():
                 continue
 
             if rank_text.isdigit():
+
                 rank = int(rank_text)
+
             else:
+
                 rank = len(movies) + 1
 
             movies.append(
@@ -186,7 +243,9 @@ with st.spinner(
 # ==================================================
 
 st.markdown(
-    '<div class="main-title">🎬 CINEMATIX HUNDRED</div>',
+    '<div class="main-title">'
+    '🎬 CINEMATIX HUNDRED'
+    '</div>',
     unsafe_allow_html=True
 )
 
@@ -200,7 +259,7 @@ st.markdown(
 
 
 # ==================================================
-# SIDEBAR SEARCH
+# SIDEBAR
 # ==================================================
 
 st.sidebar.title("🛠️ Navigation Filter")
@@ -209,9 +268,15 @@ search = st.sidebar.text_input(
     "🔍 Quick Title Lookup"
 )
 
+st.sidebar.markdown("---")
+
+st.sidebar.caption(
+    "Data source: Box Office Mojo"
+)
+
 
 # ==================================================
-# SEARCH FILTER
+# SEARCH
 # ==================================================
 
 if search:
@@ -226,7 +291,7 @@ if search:
 
 
 # ==================================================
-# MOVIE DISPLAY
+# DISPLAY
 # ==================================================
 
 if df_movies.empty:
@@ -242,9 +307,9 @@ else:
         f"({len(df_movies)} Movies Displayed)"
     )
 
-    # ------------------------------------------------
+    # ==================================================
     # TOP MOVIE
-    # ------------------------------------------------
+    # ==================================================
 
     top_movie = df_movies.iloc[0]
 
@@ -256,9 +321,9 @@ else:
 
     st.divider()
 
-    # ------------------------------------------------
-    # FOUR COLUMN MOVIE GRID
-    # ------------------------------------------------
+    # ==================================================
+    # MOVIE GRID
+    # ==================================================
 
     for start in range(
         0,
@@ -273,35 +338,41 @@ else:
             index = start + position
 
             if index >= len(df_movies):
+
                 break
 
             movie = df_movies.iloc[index]
 
             with columns[position]:
 
-                # Poster
+                # Movie poster
                 st.image(
                     get_movie_poster(index),
                     use_container_width=True
                 )
 
-                # Rank
+                # Movie information
                 st.markdown(
-                    f"**RANK #{movie['Rank']}**"
-                )
+                    f"""
+                    <div class="movie-card">
 
-                # Title
-                st.markdown(
-                    f"### {movie['Title']}"
-                )
+                        <div class="movie-rank">
+                            RANK #{movie['Rank']}
+                        </div>
 
-                # Gross
-                st.caption(
-                    "BOX OFFICE TOTAL"
-                )
+                        <div class="movie-name">
+                            {movie['Title']}
+                        </div>
 
-                st.markdown(
-                    f"**{movie['Gross']}**"
-                )
+                        <div class="metric-label">
+                            BOX OFFICE TOTAL
+                        </div>
 
-                st.divider()
+                        <div class="metric-value">
+                            {movie['Gross']}
+                        </div>
+
+                    </div>
+                    """,
+                    unsafe_allow_html=True
+                )
