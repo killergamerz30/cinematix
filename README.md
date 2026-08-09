@@ -1,53 +1,32 @@
-# Cinematix Box Office
+# Cinematix
 
-Cinematix Box Office is a Python and Streamlit web application for displaying worldwide box-office information.
-
-## Live Demo
-
-https://cinematix-box-office.streamlit.app/
+Cinematix is a Streamlit-based worldwide box-office dashboard.
 
 ## Features
 
-* Worldwide box-office dashboard
-* Movie search
-* Top movie leaderboard
-* Cinematic dark interface
-* Responsive Streamlit web application
-
-## Technologies
-
-* Python
-* Streamlit
-* Pandas
-* Requests
-* BeautifulSoup
+- Worldwide box-office data
+- Top 100 movie dashboard
+- Movie search
+- Responsive 4-column layout
+- Dark cinematic design
+- Python + Streamlit
 
 ## Installation
 
 Install the required packages:
 
-```bash
 pip install -r requirements.txt
-```
 
-## Run the Website
+## Run
 
-```bash
 streamlit run app.py
-```
 
 ## Deployment
 
 The project can be deployed using Streamlit Community Cloud.
 
-The buyer should use their own GitHub, Streamlit, API, and other service accounts.
+The buyer should deploy the project using their own GitHub and Streamlit accounts.
 
-## Security
+## Important
 
-This project does not include personal passwords or private API keys.
-
-Never add private API keys directly to the GitHub repository.
-
-## License
-
-Usage, modification, redistribution, and resale rights should be agreed between the buyer and seller.
+The buyer is responsible for checking the terms and permitted use of any third-party data sources used by the application.
