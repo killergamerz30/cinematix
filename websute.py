@@ -111,83 +111,94 @@ def scrape_worldwide_box_office_data():
             return pd.DataFrame(movie_records)
         raise ValueError()
         
-    except Exception:
-        # High-Fidelity Verified 2026 Fallback Array containing the full dataset
-        real_2026_data = [
-            {"Rank": 1, "Title": "Spider-Man: Brand New Day", "Gross": "$1,188,176,434"},
-            {"Rank": 2, "Title": "Toy Story 5", "Gross": "$1,070,550,770"},
-            {"Rank": 3, "Title": "Michael", "Gross": "$1,016,068,388"},
-            {"Rank": 4, "Title": "The Super Mario Galaxy Movie", "Gross": "$1,012,203,331"},
-            {"Rank": 5, "Title": "The Odyssey", "Gross": "$946,473,890"},
-            {"Rank": 6, "Title": "The Devil Wears Prada 2", "Gross": "$433,244,258"},
-            {"Rank": 7, "Title": "Project Hail Mary", "Gross": "$344,050,007"},
-            {"Rank": 8, "Title": "Pegasus 3", "Gross": "$262,901,155"},
-            {"Rank": 9, "Title": "Obsession", "Gross": "$241,601,072"},
-            {"Rank": 10, "Title": "Minions & Monsters", "Gross": "$169,721,350"}
-        ]
-        
-        # Smoothly expand structural rows all the way down to Rank 100
-        for i in range(11, 101):
-            decay_gross = 165.0 - ((i - 11) * 1.5)
-            real_2026_data.append({
-                "Rank": i,
-                "Title": f"2026 Major Feature Release #{i}",
-                "Gross": f"${decay_gross:.1f} Million"
-            })
-        return pd.DataFrame(real_2026_data)
+except Exception:
+    return pd.DataFrame(columns=["Rank", "Title", "Gross"])
 
-# Fetch verified arrays
-with st.spinner("Streaming complete 100 box office tracking data profiles..."):
+
+# Fetch box-office data
+with st.spinner("Loading box-office data..."):
     df_movies = scrape_worldwide_box_office_data()
 
-# 3. Clean Dashboard Headers
-st.markdown('<div class="main-title">CINEMATIX HUNDRED</div>', unsafe_allow_html=True)
-st.markdown('<div class="sub-title">Live Global Box Office Matrix • Top 100 Performance Metrics</div>', unsafe_allow_html=True)
 
-# Top Highlight Leader Metric Card
-if not df_movies.empty:
-    top_movie = df_movies.iloc[0]
-    st.markdown(f"""
-        <div style="background: linear-gradient(90deg, rgba(0,242,254,0.1) 0%, rgba(79,172,254,0.1) 100%); border: 1px solid #00F2FE; border-radius: 12px; padding: 20px; margin-bottom: 40px; text-align: center;">
-            <span style="letter-spacing: 3px; font-size: 0.8rem; color: #00F2FE; font-weight:700;">🔥 GLOBAL LEADERBOARD KING</span>
-            <h2 style="margin: 5px 0; color: #FFF; font-size: 2.2rem;">{top_movie['Title']}</h2>
-            <span style="font-size: 1.4rem; color: #00E676; font-weight: 800;">{top_movie['Gross']} Worldwide Gross</span>
-        </div>
-    """, unsafe_allow_html=True)
+# Dashboard Header
+st.markdown("CINEMATIX HUNDRED")
+st.markdown("Live Global Box Office Matrix • Top 100 Performance Metrics")
 
-# Interactive Sidebar Features
+
+# Sidebar Search
 st.sidebar.markdown("### 🛠️ Navigation Filter")
 search_filter = st.sidebar.text_input("🔍 Quick Title Lookup:")
 st.sidebar.markdown("---")
 
+
+# Search
 if search_filter:
-    df_movies = df_movies[df_movies["Title"].str.contains(search_filter, case=False)]
+    df_movies = df_movies[
+        df_movies["Title"].str.contains(
+            search_filter,
+            case=False,
+            na=False
+        )
+    ]
 
-st.markdown(f"### 📊 Active Database Inventory ({len(df_movies)} Movies Displayed)")
 
-# 4. Clean 4-Column Visual Poster Grid Layout (Full 100 Items)
-if not df_movies.empty:
+# Display Results
+if df_movies.empty:
+    st.warning("Live box-office data is temporarily unavailable.")
+else:
+    st.markdown(
+        f"### 📊 Active Database Inventory ({len(df_movies)} Movies Displayed)"
+    )
+
+    top_movie = df_movies.iloc[0]
+
+    st.markdown(
+        f"""
+        ### 🔥 GLOBAL LEADERBOARD KING
+
+        **{top_movie['Title']}**
+
+        {top_movie['Gross']} Worldwide Gross
+        """
+    )
+
+    # Movie Grid
     for idx in range(0, len(df_movies), 4):
         cols = st.columns(4)
+
         for col_offset in range(4):
             item_idx = idx + col_offset
+
             if item_idx < len(df_movies):
                 movie = df_movies.iloc[item_idx]
+
                 with cols[col_offset]:
-                    # Generate dynamic, verified unblocked visual covers
                     poster_url = get_movie_poster(item_idx)
-                    
-                    # Native Streamlit Image Channel (Bypasses local script blocks completely)
-                    st.image(poster_url, use_container_width=True)
-                    
-                    # Typography text blocks
-                    st.markdown(f"""
+
+                    st.image(
+                        poster_url,
+                        use_container_width=True
+                    )
+
+                    st.markdown(
+                        f"""
                         <div class="movie-meta-block">
-                            <div class="movie-rank">Rank #{movie['Rank']}</div>
-                            <div class="movie-name">{movie['Title']}</div>
-                            <div class="metric-label">Box Office Total</div>
-                            <div class="metric-value">{movie['Gross']}</div>
+                            <div class="movie-rank">
+                                Rank #{movie['Rank']}
+                            </div>
+
+                            <div class="movie-name">
+                                {movie['Title']}
+                            </div>
+
+                            <div class="metric-label">
+                                Box Office Total
+                            </div>
+
+                            <div class="metric-value">
+                                {movie['Gross']}
+                            </div>
                         </div>
-                    """, unsafe_allow_html=True)
-else:
-    st.warning("No movie elements match your title filter string.")
+                        """,
+                        unsafe_allow_html=True
+                    )
