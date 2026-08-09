@@ -2,6 +2,17 @@ import streamlit as st
 import pandas as pd
 import requests
 from bs4 import BeautifulSoup
+import streamlit.components.v1 as components
+
+components.html("""
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-XFVTSSPZZT"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-XFVTSSPZZT');
+</script>
+""", height=0)
 
 # 1. Professional Page Configurations & Theme Setup
 st.set_page_config(page_title="Cinematix | Live Box Office Matrix", page_icon="🎬", layout="wide")
