@@ -1,4 +1,4 @@
-import streamlit as str
+import streamlit as st
 import streamlit.components.v1 as components
 
 # Replace 'your_code_here' with the actual string from your Google HTML tag
