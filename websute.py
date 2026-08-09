@@ -1,5 +1,3 @@
-st.title("Cinematix Box office")
-
 import streamlit as st
 import pandas as pd
 import requests
