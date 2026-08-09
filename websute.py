@@ -1,3 +1,12 @@
+import streamlit as str
+import streamlit.components.v1 as components
+
+# Replace 'your_code_here' with the actual string from your Google HTML tag
+verification_tag = '<meta name="google-site-verification" content="<meta name="google-site-verification" content="JxpYPPrAA2i9Lv2vPvNDCL8ysgMwTq1-mu3ZvbOOGPA" />" />'
+components.html(verification_tag, height=0)
+
+st.title("My App")
+
 import streamlit as st
 import pandas as pd
 import requests
