@@ -3,6 +3,10 @@ import pandas as pd
 import requests
 from bs4 import BeautifulSoup
 
+# ==================================================
+# PAGE SETTINGS
+# ==================================================
+
 st.set_page_config(
     page_title="Cinematix | Live Box Office",
     page_icon="🎬",
@@ -10,20 +14,55 @@ st.set_page_config(
 )
 
 # ==================================================
-# PAGE DESIGN
+# DARK CINEMATIC THEME
 # ==================================================
 
 st.markdown(
     """
     <style>
+
     .stApp {
         background: linear-gradient(
             135deg,
-            #07090D,
-            #111827,
-            #07090D
+            #07090D 0%,
+            #111827 50%,
+            #07090D 100%
         );
     }
+
+    /* All normal text */
+    .stMarkdown,
+    .stMarkdown p,
+    .stMarkdown span,
+    .stMarkdown div {
+        color: #FFFFFF !important;
+    }
+
+    /* Headings */
+    h1, h2, h3, h4 {
+        color: #FFFFFF !important;
+    }
+
+    /* Sidebar */
+    [data-testid="stSidebar"] {
+        background-color: #0B0F19;
+    }
+
+    [data-testid="stSidebar"] * {
+        color: #FFFFFF !important;
+    }
+
+    /* Input */
+    input {
+        color: #FFFFFF !important;
+        background-color: #1F2937 !important;
+    }
+
+    /* Caption */
+    .stCaption {
+        color: #CBD5E1 !important;
+    }
+
     </style>
     """,
     unsafe_allow_html=True
@@ -47,7 +86,7 @@ def get_movie_poster(number):
 
 
 # ==================================================
-# LIVE BOX OFFICE
+# LIVE BOX OFFICE DATA
 # ==================================================
 
 @st.cache_data(ttl=14400)
@@ -91,7 +130,7 @@ def get_box_office_data():
 
                 if len(cells) >= 3:
 
-                    rank = cells[0].get_text(
+                    rank_text = cells[0].get_text(
                         strip=True
                     )
 
@@ -107,9 +146,11 @@ def get_box_office_data():
 
                         movies.append(
                             {
-                                "Rank": int(rank)
-                                if rank.isdigit()
-                                else len(movies) + 1,
+                                "Rank": (
+                                    int(rank_text)
+                                    if rank_text.isdigit()
+                                    else len(movies) + 1
+                                ),
 
                                 "Title": title,
 
@@ -145,7 +186,9 @@ with st.spinner(
 # HEADER
 # ==================================================
 
-st.title("🎬 CINEMATIX HUNDRED")
+st.title(
+    "🎬 CINEMATIX HUNDRED"
+)
 
 st.subheader(
     "Live Global Box Office Matrix • "
@@ -182,7 +225,7 @@ if search and not df_movies.empty:
 
 
 # ==================================================
-# MOVIE RESULTS
+# DISPLAY
 # ==================================================
 
 if df_movies.empty:
@@ -193,7 +236,7 @@ if df_movies.empty:
 
 else:
 
-    st.write(
+    st.markdown(
         f"### 📊 Active Database Inventory "
         f"({len(df_movies)} Movies Displayed)"
     )
@@ -242,21 +285,24 @@ else:
                 )
 
                 # Rank
-                st.caption(
+                st.markdown(
+                    f"**<span style='color:#22D3EE'>"
                     f"RANK #{movie['Rank']}"
+                    f"</span>**",
+                    unsafe_allow_html=True
                 )
 
                 # Movie name
                 st.markdown(
-                    f"**{movie['Title']}**"
+                    f"## {movie['Title']}"
                 )
 
-                # Box office label
+                # Label
                 st.caption(
                     "BOX OFFICE TOTAL"
                 )
 
-                # Box office amount
+                # Gross
                 st.markdown(
                     f"### {movie['Gross']}"
                 )
