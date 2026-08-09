@@ -3,76 +3,56 @@ import pandas as pd
 import requests
 from bs4 import BeautifulSoup
 
-# --------------------------------------------------
-# PAGE CONFIGURATION
-# --------------------------------------------------
+# ==================================================
+# PAGE SETTINGS
+# ==================================================
 
 st.set_page_config(
-    page_title="Cinematix | Live Box Office Matrix",
+    page_title="Cinematix | Live Box Office",
     page_icon="🎬",
     layout="wide"
 )
 
-# --------------------------------------------------
-# CUSTOM CSS
-# --------------------------------------------------
+# ==================================================
+# DARK CINEMATIC STYLE
+# ==================================================
 
-st.markdown("""
-<style>
+st.markdown(
+    """
+    <style>
 
-.stApp {
-    background: linear-gradient(135deg, #090A0F 0%, #151821 100%);
-    color: #E2E8F0;
-}
+    .stApp {
+        background: linear-gradient(
+            135deg,
+            #090A0F 0%,
+            #151821 100%
+        );
+    }
 
-.movie-meta-block {
-    background: rgba(255, 255, 255, 0.02);
-    border: 1px solid rgba(255, 255, 255, 0.05);
-    border-radius: 0 0 12px 12px;
-    padding: 15px;
-    margin-bottom: 25px;
-}
+    .main-title {
+        font-size: 48px;
+        font-weight: 800;
+        margin-bottom: 5px;
+    }
 
-.movie-rank {
-    font-size: 0.85rem;
-    font-weight: 700;
-    color: #00F2FE;
-    text-transform: uppercase;
-    letter-spacing: 2px;
-    margin-bottom: 4px;
-}
+    .sub-title {
+        color: #9CA3AF;
+        font-size: 18px;
+        margin-bottom: 25px;
+    }
 
-.movie-name {
-    font-size: 1.15rem;
-    font-weight: 600;
-    color: #FFFFFF;
-    margin-bottom: 10px;
-    line-height: 1.3;
-    min-height: 48px;
-}
+    </style>
+    """,
+    unsafe_allow_html=True
+)
 
-.metric-label {
-    font-size: 0.75rem;
-    color: #A0AEC0;
-    text-transform: uppercase;
-    margin-bottom: 2px;
-}
+# ==================================================
+# POSTER FUNCTION
+# ==================================================
 
-.metric-value {
-    font-size: 1.2rem;
-    font-weight: 700;
-    color: #00E676;
-}
+def get_movie_poster(number):
 
-</style>
-""", unsafe_allow_html=True)
-
-# --------------------------------------------------
-# MOVIE POSTER
-# --------------------------------------------------
-
-def get_movie_poster(rank_num):
-    img_pool = [
+    posters = [
         "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba",
         "https://images.unsplash.com/photo-1485846234645-a62644f84728",
         "https://images.unsplash.com/photo-1517604931442-7e0c8ed2963c",
@@ -80,19 +60,25 @@ def get_movie_poster(rank_num):
         "https://images.unsplash.com/photo-1485095329183-d0797cdc5676"
     ]
 
-    return img_pool[rank_num % len(img_pool)]
+    return posters[number % len(posters)]
 
-# --------------------------------------------------
-# BOX OFFICE DATA
-# --------------------------------------------------
+
+# ==================================================
+# LIVE BOX OFFICE SCRAPER
+# ==================================================
 
 @st.cache_data(ttl=14400)
-def scrape_worldwide_box_office_data():
+def get_box_office_data():
 
     url = "https://www.boxofficemojo.com/year/world/2026/"
 
     headers = {
-        "User-Agent": "Mozilla/5.0"
+        "User-Agent": (
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+            "AppleWebKit/537.36 "
+            "(KHTML, like Gecko) "
+            "Chrome/124.0.0.0 Safari/537.36"
+        )
     }
 
     try:
@@ -100,7 +86,7 @@ def scrape_worldwide_box_office_data():
         response = requests.get(
             url,
             headers=headers,
-            timeout=10
+            timeout=15
         )
 
         response.raise_for_status()
@@ -110,109 +96,143 @@ def scrape_worldwide_box_office_data():
             "html.parser"
         )
 
-        movie_records = []
-
         table = soup.find(
             "table",
             class_="mojo-body-table"
         )
 
-        if table:
+        if table is None:
+            return pd.DataFrame(
+                columns=[
+                    "Rank",
+                    "Title",
+                    "Gross"
+                ]
+            )
 
-            rows = table.find_all("tr")[1:101]
+        movies = []
 
-            for row in rows:
+        rows = table.find_all("tr")[1:101]
 
-                cols = row.find_all("td")
+        for row in rows:
 
-                if len(cols) >= 3:
+            cells = row.find_all("td")
 
-                    rank = cols[0].text.strip()
-                    title = cols[1].text.strip()
-                    gross = cols[2].text.strip()
+            if len(cells) < 3:
+                continue
 
-                    if title and gross:
+            rank_text = cells[0].get_text(
+                strip=True
+            )
 
-                        movie_records.append({
-                            "Rank": int(rank)
-                            if rank.isdigit()
-                            else len(movie_records) + 1,
+            title = cells[1].get_text(
+                strip=True
+            )
 
-                            "Title": title,
+            gross = cells[2].get_text(
+                strip=True
+            )
 
-                            "Gross": gross
-                        })
+            if not title:
+                continue
 
-        if len(movie_records) > 15:
+            if rank_text.isdigit():
+                rank = int(rank_text)
+            else:
+                rank = len(movies) + 1
 
-            return pd.DataFrame(movie_records)
+            movies.append(
+                {
+                    "Rank": rank,
+                    "Title": title,
+                    "Gross": gross
+                }
+            )
 
-        return pd.DataFrame(
-            columns=["Rank", "Title", "Gross"]
+        return pd.DataFrame(movies)
+
+    except Exception as error:
+
+        st.error(
+            "Unable to load live box-office data."
         )
 
-    except Exception:
-
-        return pd.DataFrame(
-            columns=["Rank", "Title", "Gross"]
+        st.caption(
+            f"Error: {error}"
         )
 
-# --------------------------------------------------
+        return pd.DataFrame(
+            columns=[
+                "Rank",
+                "Title",
+                "Gross"
+            ]
+        )
+
+
+# ==================================================
 # LOAD DATA
-# --------------------------------------------------
+# ==================================================
 
-with st.spinner("Loading worldwide box-office data..."):
+with st.spinner(
+    "Loading live worldwide box-office data..."
+):
 
-    df_movies = scrape_worldwide_box_office_data()
+    df_movies = get_box_office_data()
 
-# --------------------------------------------------
+
+# ==================================================
 # HEADER
-# --------------------------------------------------
+# ==================================================
 
 st.markdown(
-    "# 🎬 CINEMATIX HUNDRED"
+    '<div class="main-title">🎬 CINEMATIX HUNDRED</div>',
+    unsafe_allow_html=True
 )
 
 st.markdown(
-    "### Live Global Box Office Matrix • Top 100 Performance Metrics"
+    '<div class="sub-title">'
+    'Live Global Box Office Matrix • '
+    'Top 100 Performance Metrics'
+    '</div>',
+    unsafe_allow_html=True
 )
 
-# --------------------------------------------------
-# SIDEBAR
-# --------------------------------------------------
 
-st.sidebar.markdown(
-    "### 🛠️ Navigation Filter"
+# ==================================================
+# SIDEBAR SEARCH
+# ==================================================
+
+st.sidebar.title("🛠️ Navigation Filter")
+
+search = st.sidebar.text_input(
+    "🔍 Quick Title Lookup"
 )
 
-search_filter = st.sidebar.text_input(
-    "🔍 Quick Title Lookup:"
-)
 
-st.sidebar.markdown("---")
+# ==================================================
+# SEARCH FILTER
+# ==================================================
 
-# --------------------------------------------------
-# SEARCH
-# --------------------------------------------------
-
-if search_filter:
+if search:
 
     df_movies = df_movies[
         df_movies["Title"].str.contains(
-            search_filter,
+            search,
             case=False,
             na=False
         )
     ]
 
-# --------------------------------------------------
-# DISPLAY
-# --------------------------------------------------
+
+# ==================================================
+# MOVIE DISPLAY
+# ==================================================
 
 if df_movies.empty:
 
     st.warning(
-        "Live box-office data is temporarily unavailable. Please try again later."
+        "No movie data is currently available."
     )
 
 else:
@@ -222,9 +242,9 @@ else:
         f"({len(df_movies)} Movies Displayed)"
     )
 
-    # --------------------------------------------------
+    # ------------------------------------------------
     # TOP MOVIE
-    # --------------------------------------------------
+    # ------------------------------------------------
 
     top_movie = df_movies.iloc[0]
 
@@ -234,58 +254,54 @@ else:
         f"{top_movie['Gross']} Worldwide Gross"
     )
 
-    # --------------------------------------------------
-    # MOVIE GRID
-    # --------------------------------------------------
+    st.divider()
 
-    for idx in range(
+    # ------------------------------------------------
+    # FOUR COLUMN MOVIE GRID
+    # ------------------------------------------------
+
+    for start in range(
         0,
         len(df_movies),
         4
     ):
 
-        cols = st.columns(4)
+        columns = st.columns(4)
 
-        for col_offset in range(4):
+        for position in range(4):
 
-            item_idx = idx + col_offset
+            index = start + position
 
-            if item_idx < len(df_movies):
+            if index >= len(df_movies):
+                break
 
-                movie = df_movies.iloc[item_idx]
+            movie = df_movies.iloc[index]
 
-                with cols[col_offset]:
+            with columns[position]:
 
-                    poster_url = get_movie_poster(
-                        item_idx
-                    )
+                # Poster
+                st.image(
+                    get_movie_poster(index),
+                    use_container_width=True
+                )
 
-                    st.image(
-                        poster_url,
-                        use_container_width=True
-                    )
+                # Rank
+                st.markdown(
+                    f"**RANK #{movie['Rank']}**"
+                )
 
-                    st.markdown(
-                        f"""
-                        <div class="movie-meta-block">
+                # Title
+                st.markdown(
+                    f"### {movie['Title']}"
+                )
 
-                            <div class="movie-rank">
-                                Rank #{movie['Rank']}
-                            </div>
+                # Gross
+                st.caption(
+                    "BOX OFFICE TOTAL"
+                )
 
-                            <div class="movie-name">
-                                {movie['Title']}
-                            </div>
+                st.markdown(
+                    f"**{movie['Gross']}**"
+                )
 
-                            <div class="metric-label">
-                                Box Office Total
-                            </div>
-
-                            <div class="metric-value">
-                                {movie['Gross']}
-                            </div>
-
-                        </div>
-                        """,
-                        unsafe_allow_html=True
-                    )
+                st.divider()
