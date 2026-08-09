@@ -1,32 +1,72 @@
-# Cinematix
+# 🎬 Cinematix
 
-Cinematix is a Streamlit-based worldwide box-office dashboard.
+Cinematix is a Python + Streamlit worldwide box-office dashboard.
 
-## Features
+## 🌐 Live Demo
 
-- Worldwide box-office data
-- Top 100 movie dashboard
-- Movie search
-- Responsive 4-column layout
-- Dark cinematic design
-- Python + Streamlit
+https://cinematix-box-office.streamlit.app/
 
-## Installation
+## ✨ Features
+
+* 🌎 Worldwide box-office dashboard
+* 🏆 Top 100 movies
+* 🔍 Movie title search
+* 📊 Box-office performance
+* 🎬 Cinematic dark design
+* 📱 Responsive Streamlit interface
+* 🐍 Built with Python
+
+## 🛠️ Technologies
+
+* Python
+* Streamlit
+* Pandas
+* Requests
+* BeautifulSoup
+
+## 📦 Installation
 
 Install the required packages:
 
+```bash
 pip install -r requirements.txt
+```
 
-## Run
+## ▶️ Run Locally
 
+```bash
 streamlit run app.py
+```
 
-## Deployment
+## 🚀 Deployment
 
 The project can be deployed using Streamlit Community Cloud.
 
-The buyer should deploy the project using their own GitHub and Streamlit accounts.
+The buyer should use their **own GitHub and Streamlit accounts** for deployment.
 
-## Important
+## 📁 Project Files
 
-The buyer is responsible for checking the terms and permitted use of any third-party data sources used by the application.
+* `app.py` — Main application
+* `requirements.txt` — Required Python packages
+* `README.md` — Project documentation
+
+## ⚠️ Important
+
+The application uses third-party data sources. Before commercial use, the buyer should review the applicable terms and permitted use of those sources.
+
+## 🔐 Account Security
+
+This project does not include the seller's:
+
+* GitHub credentials
+* Streamlit credentials
+* Google account
+* Google Analytics account
+* Passwords
+* Private API keys
+
+The buyer should configure their own accounts and credentials.
+
+## 📄 License / Sale
+
+The buyer receives the project files according to the terms agreed between the buyer and seller.
