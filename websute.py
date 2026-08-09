@@ -1,17 +1,4 @@
 import streamlit as st
-import streamlit.components.v1 as components
-
-components.html("""
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-XFVTSSPZZT"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-  gtag('config', 'G-XFVTSSPZZT');
-</script>
-""", height=0)
-import streamlit as st
 import pandas as pd
 import requests
 from bs4 import BeautifulSoup
